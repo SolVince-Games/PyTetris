@@ -6,6 +6,7 @@ from os import path as osPath
 from copy import deepcopy
 from json import load as jsonLoad
 from json import dump as jsonDump
+import psutil
 
 # Inits
 pygame.init()
@@ -70,6 +71,7 @@ controls = {
     'volume up': [61],
     'volume down': [45],
     'mute': [pygame.K_0],
+    'dementia': [pygame.K_d]
 }
 
 if osPath.isfile('controls.json'):
@@ -109,6 +111,8 @@ paused = False
 reset = False
 coloured = True
 show_fps = False
+dementia = True
+lastShape = None
 volume = 1.0
 AREpaused = False
 AREpauseLength = 0
@@ -168,7 +172,11 @@ def rotateTable(table):
 stamps = []
 def drawStamps():
     for pos, sprite in stamps:
-        screen.blit(sprite.image, pos)
+        if (not dementia):
+            screen.blit(sprite.image, pos)
+        elif lastShape:
+            if (dementia and pos in [(96+8*piece.globalx,40+8*piece.globaly) for piece in lastShape.pieces]):
+                screen.blit(sprite.image, pos)
 
 TotalAREpauseLength = 60
 AREFlashes = 3
@@ -176,7 +184,8 @@ flash_stamps = []
 def flashStamps():
     for pos, sprite in flash_stamps:
         if AREpauseLength <= (TotalAREpauseLength/(2*AREFlashes)) or (AREpauseLength > (TotalAREpauseLength/(2*AREFlashes))*2 and AREpauseLength <= (TotalAREpauseLength/(2*AREFlashes))*3) or (AREpauseLength > (TotalAREpauseLength/(2*AREFlashes))*4 and AREpauseLength <= (TotalAREpauseLength/(2*AREFlashes))*5):
-            screen.blit(sprite.image, pos)
+            if not dementia:
+                screen.blit(sprite.image, pos)
         else:
             pygame.draw.rect(screen, 'white', (pos[0], pos[1], 7, 7))
 
@@ -190,7 +199,6 @@ def writeNums(pos: tuple, num: int, length: int,color=(255,255,255)):
         text.fill(color, special_flags=pygame.BLEND_RGB_MULT)
         screen.blit(text, (pos[0]+8*i,pos[1]))
         i += 1
-
 
 
 
@@ -247,6 +255,8 @@ class Shapes:
             for c in self.hitbox:
                 if c.isdigit():
                     piece = self.__piece(self.piece_sprite,c,x,y,self.id)
+                    piece.globalx = self.x + x
+                    piece.globaly = self.y + y
                     self.pieces.append(piece)
                     self.piecesGroup.add(piece.sprite)
                     x += 1
@@ -305,6 +315,7 @@ class Shapes:
             self.piecesGroup.draw(screen)
             
         def stamp(self):
+            global lastShape
             for piece in self.pieces:
                 # x = 96+(8*(self.x+piece.localx))
                 # y = 40+(8*(self.y+piece.localy))
@@ -313,6 +324,7 @@ class Shapes:
                 s.globaly = self.y+piece.localy
                 setTileonMap(self.x+piece.localx,self.y+piece.localy,self.id)
             self.makePieces()
+            lastShape = self
             
     I = shape('I','1','01x23')
     J = shape('J','0','01x2-  3')
@@ -510,6 +522,7 @@ while replay:
     reset = False
     closed = False
     paused = False
+    dementia = True
     AREpaused = False
     AREpauseLength = 0
     linesCleared = 0
@@ -533,6 +546,7 @@ while replay:
     holdShape = None
     holdCount = 0
     ghostShape = Shapes.shape('G'+currentShape.id,'ghost',currentShape.hitbox)
+    lastShape = None
 
     pygame.mixer.music.play(-1)
 
@@ -586,6 +600,10 @@ while replay:
                         pygame.mixer.music.pause()
                     else:
                         pygame.mixer.music.unpause()
+
+                if event.key in controls['dementia']:
+                    dementia = not dementia
+
                 if event.key in controls['reset']:
                     reset = True
                 if event.key in controls['quit']:
@@ -807,6 +825,11 @@ while replay:
                 writeNums((2,0),int(clock.get_fps()),2,(255,255,0))
             else:
                 writeNums((2,0),int(clock.get_fps()),2,(255,255,255))
+
+            pygame.draw.rect(screen,(0,0,0),pygame.Rect(0,10, 19,9))
+            writeNums((2,10),round(psutil.cpu_percent()), 2, (255,255,255))
+            pygame.draw.rect(screen,(0,0,0),pygame.Rect(0,20, 19,9))
+            writeNums((2,20),round(psutil.virtual_memory().percent), 2, (255,255,255))
 
         if paused and running:
             screen.blit(paused_overlay,(0,0))
