@@ -23,4 +23,8 @@ we made tetris in pygame. pain insued.
 **Scale 4:** 4\
 **Volume Up:** minus\
 **Volume Down:** plus\
-**Mute:** 0
+**Mute:** 0\
+
+
+
+**TOGGLE DEMENTIA:** d 
