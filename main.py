@@ -6,7 +6,6 @@ from os import path as osPath
 from copy import deepcopy
 from json import load as jsonLoad
 from json import dump as jsonDump
-import psutil
 
 # Inits
 pygame.init()
@@ -825,11 +824,6 @@ while replay:
                 writeNums((2,0),int(clock.get_fps()),2,(255,255,0))
             else:
                 writeNums((2,0),int(clock.get_fps()),2,(255,255,255))
-
-            pygame.draw.rect(screen,(0,0,0),pygame.Rect(0,10, 19,9))
-            writeNums((2,10),round(psutil.cpu_percent()), 2, (255,255,255))
-            pygame.draw.rect(screen,(0,0,0),pygame.Rect(0,20, 19,9))
-            writeNums((2,20),round(psutil.virtual_memory().percent), 2, (255,255,255))
 
         if paused and running:
             screen.blit(paused_overlay,(0,0))
