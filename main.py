@@ -332,12 +332,18 @@ class Shapes:
     S = shape('S','0',' 0x1-23 ')
     T = shape('T','1','01x2- 3 ')
     Z = shape('Z','2','01x - 23')
+    
     def __makeBag():
         out = []
         for shape in list(all_shapes.values()):
-            out.insert(randint(0,len(out)),shape)
+            if len(out) == 0:
+                out.insert(0,shape)
+            else:
+                out.insert(randint(0,len(out)-1),shape)
+        # print(out)
         return out
     bag = []
+
     def fromBag() -> shape:
         if len(Shapes.bag) == 0:
             Shapes.bag = Shapes.__makeBag()
